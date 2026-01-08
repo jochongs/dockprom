@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  dockprom-wrapper:
+    build:
+      context: .
+      dockerfile: Dockerfile.wrapper
+    container_name: dockprom-wrapper
+    privileged: true
+    ports:
+      - "3000:3000"   # Grafana
+      - "8080:8080"   # cAdvisor
+      - "9090:9090"   # Prometheus
+      - "9093:9093"   # Alertmanager
+      - "9091:9091"   # Pushgateway
+    volumes:
+      - dockprom-data:/var/lib/docker
+      - prometheus-data:/app/prometheus-data
+      - grafana-data:/app/grafana-data
+    environment:
+      - ADMIN_USER=${ADMIN_USER:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH:-$2a$14$1l.IozJx7xQRVmlkEQ32OeEEfP5mRxTpbDTCTcXRqn19gXD8YK1pO}
+    restart: unless-stopped
+    networks:
+      - dockprom-net
+
+volumes:
+  dockprom-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  dockprom-net:
+    driver: bridge
